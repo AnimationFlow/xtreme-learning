@@ -1,0 +1,6 @@
+- [x] koje komponente instalirati u VS
+- [x] repo
+- [x] WARP config
+- [x] pgAdmin config
+- [ ] pridružiti relevantnim grupama
+- [ ] TeamCity

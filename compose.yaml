@@ -1,0 +1,23 @@
+# named volume 'pgdata' is marked as "external" (used by service 'postgres'), so either remove "external" from volume definition or it needs to be created using: docker volume create pgdata
+name: <your project name>
+services:
+    postgres:
+        container_name: pg-dev
+        environment:
+            - POSTGRES_PASSWORD=devpass
+            - POSTGRES_DB=arena_royale
+        ports:
+            - 5432:5432
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data
+        image: postgres:17
+    rabbitmq:
+        container_name: rabbitmq
+        ports:
+            - 5672:5672
+            - 15672:15672
+        image: rabbitmq:3-management
+volumes:
+    pgdata:
+        external: true
+        name: pgdata

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NewTask/NewTask.csproj" />
+  <Project Path="Worker/Worker.csproj" />
+</Solution>

@@ -9,16 +9,19 @@ using var channel = await connection.CreateChannelAsync();
 
 await channel.QueueDeclareAsync(queue: "task_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
 
-string message = GetMessage(args);
+string[] messages = GetMessages(args);
 
-var body = Encoding.UTF8.GetBytes(message);
+foreach (var message in messages)
+{
+    var body = Encoding.UTF8.GetBytes(message);
 
-await channel.BasicPublishAsync(exchange: string.Empty, routingKey: "task_queue", body: body);
-Console.WriteLine($" -> Sent : {message}");
+    await channel.BasicPublishAsync(exchange: string.Empty, routingKey: "task_queue", body: body);
+    Console.WriteLine($" -> Sent : {message}");
+}
 
 Console.WriteLine();
 
-static string GetMessage(string[] args)
+static string[] GetMessages(string[] args)
 {
-    return ((args.Length > 0) ? string.Join(" ", args) : "Hello World!");
+    return ((args.Length > 0) ? args : ["Hello World!"]);
 }

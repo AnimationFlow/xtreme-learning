@@ -1,5 +1,5 @@
 # named volume 'pgdata' is marked as "external" (used by service 'postgres'), so either remove "external" from volume definition or it needs to be created using: docker volume create pgdata
-name: <your project name>
+name: RabbitMQ
 services:
     postgres:
         container_name: pg-dev

@@ -7,7 +7,13 @@ var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
-await channel.QueueDeclareAsync(queue: "task_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
+await channel.QueueDeclareAsync(
+    queue: "task_queue", 
+    durable: true, 
+    exclusive: false, 
+    autoDelete: false, 
+    arguments: null
+);
 
 string[] messages = GetMessages(args);
 var properties = new BasicProperties { Persistent = true };

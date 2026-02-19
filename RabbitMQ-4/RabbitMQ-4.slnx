@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="EmitLogDirect/EmitLogDirect.csproj" />
+  <Project Path="ReceiveLogsDirect/ReceiveLogsDirect.csproj" />
+</Solution>

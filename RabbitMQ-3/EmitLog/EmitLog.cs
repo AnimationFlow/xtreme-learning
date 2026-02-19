@@ -1,4 +1,4 @@
-﻿// Emit Log
+// Emit Logs
 
 using RabbitMQ.Client;
 using System.Text;
@@ -7,33 +7,25 @@ var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
-await channel.QueueDeclareAsync(
-    queue: "task_queue",
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    arguments: null
+await channel.ExchangeDeclareAsync(
+    exchange: "logs",
+    type: ExchangeType.Fanout
 );
 
 string[] messages = GetMessages(args);
-var properties = new BasicProperties { Persistent = true };
 
 foreach (var message in messages)
 {
     var body = Encoding.UTF8.GetBytes(message);
 
     await channel.BasicPublishAsync(
-        exchange: string.Empty,
-        routingKey: "task_queue",
-        mandatory: true,
-        basicProperties: properties,
+        exchange: "logs",
+        routingKey: string.Empty,
         body: body
     );
 
     Console.WriteLine($" -> Sent : {message}");
 }
-
-Console.WriteLine();
 
 static string[] GetMessages(string[] args)
 {

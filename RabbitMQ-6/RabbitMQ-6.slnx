@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="RPCClient/RPCClient.csproj" />
+  <Project Path="RPCServer/RPCServer.csproj" />
+</Solution>

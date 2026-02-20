@@ -3,24 +3,24 @@
 using RabbitMQ.Client;
 using System.Text;
 
-if (args.Length < 1 || args[0] is not ("info" or "warning" or "error"))
+if (args.Length < 2)
 {
     var filename = Path.GetFileName(Environment.ProcessPath);
-    Console.Error.WriteLine($"Usage: {filename} [info|warning|error] [message...]");
+    Console.Error.WriteLine($"Usage: {filename} [routingKey] [message...]");
 
     Environment.ExitCode = 1;
     return;
 }
 
-var severity = args[0];
+var routingKey = args[0];
 
 var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
 await channel.ExchangeDeclareAsync(
-    exchange: "direct_logs",
-    type: ExchangeType.Direct
+    exchange: "topic_logs",
+    type: ExchangeType.Topic
 );
 
 string[] messages = GetMessages(args);
@@ -30,12 +30,12 @@ foreach (var message in messages)
     var body = Encoding.UTF8.GetBytes(message);
 
     await channel.BasicPublishAsync(
-        exchange: "direct_logs",
-        routingKey: severity,
-        body: body
+        exchange: "topic_logs",
+        routingKey,
+        body
     );
 
-    Console.WriteLine($" -> Sent : {severity} - {message}");
+    Console.WriteLine($" -> Sent : {routingKey} - {message}");
 }
 
 static string[] GetMessages(string[] args)

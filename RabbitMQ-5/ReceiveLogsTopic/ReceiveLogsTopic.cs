@@ -6,12 +6,8 @@ using System.Text;
 
 if (args.Length == 0)
 {
-    args = ["info", "warning", "error"];
-}
-else if (args.Any(arg => arg is not ("info" or "warning" or "error")))
-{
     var filename = Path.GetFileName(Environment.ProcessPath);
-    Console.Error.WriteLine($"Usage: {filename} [info|warning|error] [message...]");
+    Console.Error.WriteLine($"Usage: {filename} [routingKey...]");
 
     Environment.ExitCode = 1;
     return;
@@ -22,24 +18,29 @@ using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
 await channel.ExchangeDeclareAsync(
-    exchange: "direct_logs",
-    type: ExchangeType.Direct
+    exchange: "topic_logs",
+    type: ExchangeType.Topic
 );
 
 var queueDeclareResult = await channel.QueueDeclareAsync();
 string queueName = queueDeclareResult.QueueName;
 
-foreach (var severity in args)
+foreach (var routingKey in args)
 {
     await channel.QueueBindAsync(
-        queue: queueName,
-        exchange: "direct_logs",
-        routingKey: severity
+        queueName,
+        exchange: "topic_logs",
+        routingKey
     );
 }
 
-Console.WriteLine($" Waiting for messages : {string.Join(", ", args)}");
-Console.WriteLine(" Press <Enter> to exit");
+Console.WriteLine(" Press <Enter> to exit\n");
+Console.WriteLine(" Waiting for messages with routing keys:");
+foreach (var key in args)
+{
+    Console.WriteLine($" - {key}");
+}
+Console.WriteLine();
 
 var consumer = new AsyncEventingBasicConsumer(channel);
 
@@ -52,6 +53,6 @@ consumer.ReceivedAsync += (model, ea) =>
     return Task.CompletedTask;
 };
 
-await channel.BasicConsumeAsync(queueName, autoAck: true, consumer: consumer);
+await channel.BasicConsumeAsync(queueName, autoAck: true, consumer);
 
 Console.ReadLine();

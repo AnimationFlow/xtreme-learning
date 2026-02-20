@@ -11,12 +11,16 @@ services:
         volumes:
             - ./pgdata:/var/lib/postgresql/data
         image: postgres:17
+        restart: unless-stopped
+        
     rabbitmq:
         container_name: rabbitmq
         ports:
             - 5672:5672
             - 15672:15672
         image: rabbitmq:3-management
+        restart: unless-stopped
+        
 volumes:
     pgdata:
         external: true

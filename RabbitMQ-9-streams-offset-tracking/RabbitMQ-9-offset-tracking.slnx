@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="RabbitMQ-9-offset-tracking-send/RabbitMQ-9-offset-tracking-send.csproj" />
+  <Project Path="RabbitMQ-9-offset-tracking-receive/RabbitMQ-9-offset-tracking-receive.csproj" />
+</Solution>

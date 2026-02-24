@@ -1,3 +1,3 @@
-- udemy
-- orleans
-- rabbit mq
+- [ ] ~~udemy~~
+- [x] rabbit mq
+- [ ] orleans

@@ -1,27 +1,46 @@
-# named volume 'pgdata' is marked as "external" (used by service 'postgres'), so either remove "external" from volume definition or it needs to be created using: docker volume create pgdata
+
 name: RabbitMQ
+
 services:
-    postgres:
-        container_name: pg-dev
-        environment:
-            - POSTGRES_PASSWORD=devpass
-            - POSTGRES_DB=arena_royale
-        ports:
-            - 5432:5432
-        volumes:
-            - ./pgdata:/var/lib/postgresql/data
-        image: postgres:17
-        restart: unless-stopped
-        
-    rabbitmq:
-        container_name: rabbitmq
-        ports:
-            - 5672:5672
-            - 15672:15672
-        image: rabbitmq:3-management
-        restart: unless-stopped
-        
+  postgres:
+    container_name: pg-dev
+    image: postgres:17
+    environment:
+      - POSTGRES_PASSWORD=devpass
+      - POSTGRES_DB=arena_royale
+    ports:
+      - 0.0.0.0:5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:4-management
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_stream advertised_host localhost
+    ports:
+      - 0.0.0.0:5552:5552       # Streams TCP
+      - 0.0.0.0:5672:5672       # AMQP
+      - 0.0.0.0:15672:15672     # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro  # Enables stream + management
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
-    pgdata:
-        external: true
-        name: pgdata
+  rabbitmq_data:
+  pgdata:

@@ -1,53 +1,11 @@
-var builder = WebApplication.CreateBuilder(args);
+// URL shortener API using ASP.NET Core minimal APIs
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+using Orleans.Runtime;
+
+var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-10, 45),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.MapGet("/", () => 
-{
-    var urls = new[] { 
-        "/weatherforecast", 
-        "/openapi/v1.json"
-    };
-    var links = urls.Select(endpoint => $"<a href=\"{endpoint}\">{endpoint}</a>").ToList();
-    var html = $"<html><body><h1>Available Endpoints</h1><ul><li>{string.Join("</li><li>", links)}</li></ul></body></html>";
-    return Results.Content(html, "text/html");
-})
-.WithName("Home");
+app.MapGet("/", () => "Hello World!");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

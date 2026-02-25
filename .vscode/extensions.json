@@ -2,6 +2,7 @@
     "recommendations": [
         "martinkozle.martin-oled-black-theme",
         "ms-dotnettools.csdevkit",
-        "patcx.vscode-nuget-gallery"
+        "patcx.vscode-nuget-gallery",
+        "humao.rest-client"
     ]
 }

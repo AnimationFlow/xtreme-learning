@@ -1,11 +1,64 @@
 // URL shortener API using ASP.NET Core minimal APIs
 
-using Orleans.Runtime;
+// using Orleans.Runtime;
+using System.IO.Hashing;
+using System.Text;
+using Orleans.Dashboard;
 
-var builder = WebApplication.CreateBuilder(args);
+var siloHostBuiledr = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+siloHostBuiledr.Host.UseOrleans(static siloBuilder =>
+{
+    siloBuilder.UseLocalhostClustering();
+    siloBuilder.AddMemoryGrainStorage("urls");
+    siloBuilder.AddDashboard();
+});
 
-app.MapGet("/", () => "Hello World!");
+var siloHostApp = siloHostBuiledr.Build();
 
-app.Run();
+siloHostApp.MapOrleansDashboard();
+
+siloHostApp.MapGet("/shorten",
+    static async (IGrainFactory grainFactory, HttpRequest request, string? url) =>
+    {
+        var host = $"{request.Scheme}://{request.Host.Value}";
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return Results.BadRequest("url query parameter is required");
+        }
+
+        if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+        {
+            return Results.BadRequest("url query parameter should be a well formed absolute url");
+        }
+
+        var shortenedRouteSegment = Crc32.HashToUInt32(Encoding.UTF8.GetBytes(url)).ToString("x");
+
+        var shortenerGrain = grainFactory.GetGrain<IUrlShortenerGrain>(shortenedRouteSegment);
+
+        await shortenerGrain.SetUrl(url);
+
+        var resultBuilder = new UriBuilder(host)
+        {
+            Path = $"/go/{shortenedRouteSegment}"
+        };
+
+        return Results.Ok(resultBuilder.Uri);
+    }
+);
+
+siloHostApp.MapGet("/go/{shortenedRouteSegment:required}",
+    static async (IGrainFactory grainFactory, string shortenedRouteSegment) =>
+    {
+        var shortenerGrain = grainFactory.GetGrain<IUrlShortenerGrain>(shortenedRouteSegment);
+
+        var url = await shortenerGrain.GetUrl();
+
+        var redirectBuilder = new UriBuilder(url);
+
+        return Results.Redirect(redirectBuilder.Uri.ToString());
+    }
+);
+
+await siloHostApp.RunAsync();

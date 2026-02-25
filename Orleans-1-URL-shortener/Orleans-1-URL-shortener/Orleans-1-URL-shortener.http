@@ -1,6 +1,19 @@
-@Orleans_1_URL_shortener_HostAddress = http://localhost:5175
+@Host = http://localhost:5175
 
-GET {{Orleans_1_URL_shortener_HostAddress}}/weatherforecast/
-Accept: application/json
+GET {{Host}}/shorten?url=https://animationflow.hr
+###
 
+GET {{Host}}/shorten?url=http://youtube.com
+###
+
+GET {{Host}}/shorten
+###
+
+GET {{Host}}/shorten?url
+###
+
+GET {{Host}}/shorten?url=animationflow
+###
+
+GET {{Host}}/shorten?url=animationflow.hr
 ###

@@ -1,20 +1,31 @@
 // URL shortener API using ASP.NET Core minimal APIs
 
 // using Orleans.Runtime;
+using Orleans.Dashboard;
 using System.IO.Hashing;
 using System.Text;
-using Orleans.Dashboard;
 
-var siloHostBuiledr = WebApplication.CreateBuilder(args);
+var siloHostBuilder = WebApplication.CreateBuilder(args);
 
-siloHostBuiledr.Host.UseOrleans(static siloBuilder =>
+var orleansConnectionString = siloHostBuilder.Configuration.GetConnectionString("Orleans");
+
+siloHostBuilder.Host.UseOrleans(siloBuilder =>
 {
-    siloBuilder.UseLocalhostClustering();
-    siloBuilder.AddMemoryGrainStorage("urls");
-    siloBuilder.AddDashboard();
+    siloBuilder
+        .AddAdoNetGrainStorage("urls", grainStorageOptions =>
+        {
+            grainStorageOptions.Invariant = "Npgsql";
+            grainStorageOptions.ConnectionString = orleansConnectionString;
+        })
+        .UseAdoNetClustering(clusteringSiloOptions =>
+        {
+            clusteringSiloOptions.Invariant = "Npgsql";
+            clusteringSiloOptions.ConnectionString = orleansConnectionString;
+        })
+        .AddDashboard();
 });
 
-var siloHostApp = siloHostBuiledr.Build();
+var siloHostApp = siloHostBuilder.Build();
 
 siloHostApp.MapOrleansDashboard();
 

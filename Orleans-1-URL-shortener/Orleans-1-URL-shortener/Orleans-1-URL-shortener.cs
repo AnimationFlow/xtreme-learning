@@ -5,11 +5,23 @@ using Orleans.Dashboard;
 using System.IO.Hashing;
 using System.Text;
 
-var siloHostBuilder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-var orleansConnectionString = siloHostBuilder.Configuration.GetConnectionString("Orleans");
+var orleansConnectionString = builder.Configuration.GetConnectionString("Orleans");
 
-siloHostBuilder.Host.UseOrleans(siloBuilder =>
+var envVarPgHost = Environment.GetEnvironmentVariable("PGHOST");
+if (!string.IsNullOrEmpty(envVarPgHost))
+{
+    // Override PGHOST if set, to allow easier configuration when running in Docker
+    var orleansConnectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder(orleansConnectionString)
+    {
+        Host = envVarPgHost
+    };
+
+    orleansConnectionString = orleansConnectionStringBuilder.ToString();
+}
+
+builder.Host.UseOrleans(siloBuilder =>
 {
     siloBuilder
         .AddAdoNetGrainStorage("urls", grainStorageOptions =>
@@ -25,11 +37,12 @@ siloHostBuilder.Host.UseOrleans(siloBuilder =>
         .AddDashboard();
 });
 
-var siloHostApp = siloHostBuilder.Build();
+var app = builder.Build();
 
-siloHostApp.MapOrleansDashboard();
+if (app.Environment.IsDevelopment())
+    app.MapOrleansDashboard();
 
-siloHostApp.MapGet("/shorten",
+app.MapGet("/shorten",
     static async (IGrainFactory grainFactory, HttpRequest request, string? url) =>
     {
         var host = $"{request.Scheme}://{request.Host.Value}";
@@ -59,17 +72,20 @@ siloHostApp.MapGet("/shorten",
     }
 );
 
-siloHostApp.MapGet("/go/{shortenedRouteSegment:required}",
+app.MapGet("/go/{shortenedRouteSegment:required}",
     static async (IGrainFactory grainFactory, string shortenedRouteSegment) =>
     {
         var shortenerGrain = grainFactory.GetGrain<IUrlShortenerGrain>(shortenedRouteSegment);
 
         var url = await shortenerGrain.GetUrl();
 
-        var redirectBuilder = new UriBuilder(url);
+        if(string.IsNullOrEmpty(url))
+        {
+            return Results.NotFound("Shortened URL not found");
+        }
 
-        return Results.Redirect(redirectBuilder.Uri.ToString());
+        return Results.Redirect(url);
     }
 );
 
-await siloHostApp.RunAsync();
+await app.RunAsync();

@@ -1,0 +1,29 @@
+@Host = http://localhost:5176
+
+### Shorten URL
+# @name shorten-1
+GET {{Host}}/shorten?url=https://animationflow.hr
+
+### Follow short URL – inspect redirect
+# @name redirect-1
+GET {{Host}}/go/c57e82c2
+
+### Shorten URL
+# @name shorten-2
+GET {{Host}}/shorten?url=http://youtube.com
+
+### Follow short URL – inspect redirect
+# @name redirect-2
+GET {{Host}}/go/4c75659b
+
+### Bad /shorten calls (validation)
+# @name no-url-1
+GET {{Host}}/shorten
+
+### Bad /shorten calls (validation)
+# @name no-url-2
+GET {{Host}}/shorten?url
+
+### Bad /shorten calls (validation)
+# @name bad-url
+GET {{Host}}/shorten?url=badurl

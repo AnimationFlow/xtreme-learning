@@ -2,10 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY Orleans-1-URL-shortener/Orleans-1-URL-shortener/*.csproj ./
+COPY ./*.csproj ./
 RUN dotnet restore
 
-COPY Orleans-1-URL-shortener/Orleans-1-URL-shortener/ ./
+COPY . .
 RUN dotnet publish -c Release -o /app/publish
 
 # Stage 2: Runtime

@@ -23,8 +23,8 @@ services:
 
   url-shortener:
     build:
-      context: .
-      dockerfile: Orleans-1-URL-shortener/Orleans-1-URL-shortener/Dockerfile
+      context: ./Orleans-1-URL-shortener/Orleans-1-URL-shortener/
+      dockerfile: ./Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080

@@ -17,16 +17,10 @@ Grains are the **fundamental building blocks** of Orleans – they're virtual ac
 ## Properties
 
 - **Unique Identity**: Each grain has a key (Guid, long, string, or compound)
-
 - **Single-threaded**: Only one request processes at a time (no locks needed!)
-
 - **Location-transparent**: You don't know/care which silo hosts it
-
 - **Activate on demand**: Created when first called, garbage collected when idle
-
 - **Stateful or stateless**: Can hold in-memory state or use persistence
-
-  
 
 ## Anatomy of a Grain
 
@@ -81,25 +75,15 @@ public Task AddScore(int points) { _score += points; return Task.CompletedTask; 
 ## Grain Key Types
 
 | Interface | Key Type | Use Case |
-
 |---|---|---|
-
 | `IGrainWithGuidKey` | Guid | Players, sessions |
-
 | `IGrainWithIntegerKey` | long | Sequential entities |
-
 | `IGrainWithStringKey` | string | Named lookups |
-
 | `IGrainWithGuidCompoundKey` | Guid + string | Multi-tenant |
-
-  
 
 ## Links
 
 - [[Grain Lifecycle]]
-
 - [[Grain State]]
-
 - [[Grain Identity]]
-
 - [[Player as Grain]]

@@ -78,6 +78,6 @@ created: 2026-02-17
 
 ## Related
 
-- [[RabbitMQ + MassTransit MOC]] – when to use messaging vs grain calls
+- [[Orleans + RabbitMQ – When to Use What]] – when to use messaging vs grain calls
 
 - [[Architecture Patterns MOC]] – where Orleans fits in the architecture

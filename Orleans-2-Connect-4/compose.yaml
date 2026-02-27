@@ -1,5 +1,4 @@
-
-name: tic-tac-toe
+name: connect-4
 
 services:
   postgres:
@@ -21,14 +20,13 @@ services:
       timeout: 5s
       retries: 5
 
-  connect-4:
+  connect-4-api:
     build:
       context: .
       dockerfile: ./Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Orleans: "Host=postgres;Database=orleans;Username=devuser;Password=devpass"
-      Jaeger__Endpoint: "http://jaeger:4317"
     deploy:
       replicas: 2
     ports:
@@ -36,18 +34,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-  #     jaeger:
-  #       condition: service_started
-
-  # jaeger:
-  #   image: jaegertracing/all-in-one:latest
-  #   container_name: jaeger
-  #   environment:
-  #     - COLLECTOR_OTLP_ENABLED=true
-  #   ports:
-  #     - 16686:16686   # Jaeger UI
-  #     - 4317:4317     # OTLP gRPC receiver
-  #   restart: unless-stopped
 
   rabbitmq:
     container_name: rabbitmq

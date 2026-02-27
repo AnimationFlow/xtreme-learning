@@ -1,6 +1,9 @@
 // URL shortener API using ASP.NET Core minimal APIs
 
 // using Orleans.Runtime;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Orleans.Configuration;
 using Orleans.Dashboard;
 using System.IO.Hashing;
 using System.Text;
@@ -10,9 +13,26 @@ var builder = WebApplication.CreateBuilder(args);
 var orleansConnectionString = builder.Configuration.GetConnectionString("Orleans")
     ?? throw new InvalidOperationException("Missing required connection string 'Orleans'.");
 
+
+var siloName = System.Net.Dns.GetHostName(); // unique per container replica
+var jaegerEndpoint = builder.Configuration["Jaeger:Endpoint"] ?? "http://jaeger:4317";
+
+// Observability
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService(
+        serviceName: "url-shortener",
+        serviceInstanceId: siloName))   // tells Jaeger which replica this is
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddSource("Microsoft.Orleans.Runtime")
+        .AddSource("Microsoft.Orleans.Application")
+        .AddOtlpExporter(otlp => otlp.Endpoint = new Uri(jaegerEndpoint)));
+
+
 builder.Host.UseOrleans(siloBuilder =>
 {
     siloBuilder
+        .Configure<SiloOptions>(opts => opts.SiloName = siloName)
         .UseAdoNetClustering(clusteringSiloOptions =>
         {
             clusteringSiloOptions.Invariant = "Npgsql";
@@ -23,6 +43,7 @@ builder.Host.UseOrleans(siloBuilder =>
             grainStorageOptions.Invariant = "Npgsql";
             grainStorageOptions.ConnectionString = orleansConnectionString;
         })
+        .AddActivityPropagation()   // propagates trace context across grain calls
         .AddDashboard();
 });
 

@@ -1,0 +1,73 @@
+
+name: tic-tac-toe
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=orleans
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=devpass
+    ports:
+      - 0.0.0.0:5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./orleans-scripts:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devuser -d orleans"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  connect-4:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Orleans: "Host=postgres;Database=orleans;Username=devuser;Password=devpass"
+      Jaeger__Endpoint: "http://jaeger:4317"
+    deploy:
+      replicas: 2
+    ports:
+      - 5175-5176:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+  #     jaeger:
+  #       condition: service_started
+
+  # jaeger:
+  #   image: jaegertracing/all-in-one:latest
+  #   container_name: jaeger
+  #   environment:
+  #     - COLLECTOR_OTLP_ENABLED=true
+  #   ports:
+  #     - 16686:16686   # Jaeger UI
+  #     - 4317:4317     # OTLP gRPC receiver
+  #   restart: unless-stopped
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:4-management
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_stream advertised_host localhost
+    ports:
+      - 0.0.0.0:5552:5552       # Streams TCP
+      - 0.0.0.0:5672:5672       # AMQP
+      - 0.0.0.0:15672:15672     # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro  # Enables stream + management
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+volumes:
+  rabbitmq_data:
+  pgdata:

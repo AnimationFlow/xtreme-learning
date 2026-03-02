@@ -71,16 +71,16 @@ public class MatchGrain : Grain, IMatchGrain
 ```
 
 ## Decision Matrix
-| Scenario | Orleans | RabbitMQ |
-|---|:---:|:---:|
-| Player action in game | ✅ | |
-| Update leaderboard after match | | ✅ |
-| Real-time game state sync | ✅ | |
-| Send email notification | | ✅ |
-| Cross-service integration | | ✅ |
-| Grain-to-grain within cluster | ✅ | |
-| Guaranteed event processing | | ✅ |
-| Load distribution (work queues) | | ✅ |
+| Scenario                        | Orleans | RabbitMQ |
+| ------------------------------- | :-----: | :------: |
+| Player action in game           |    ✅    |          |
+| Update leaderboard after match  |         |    ✅     |
+| Real-time game state sync       |    ✅    |          |
+| Send email notification         |         |    ✅     |
+| Cross-service integration       |         |    ✅     |
+| Grain-to-grain within cluster   |    ✅    |          |
+| Guaranteed event processing     |         |    ✅     |
+| Load distribution (work queues) |         |    ✅     |
 
 ## Links
 - [[Orleans Streams]] – Orleans' built-in streaming (alternative for some cases)

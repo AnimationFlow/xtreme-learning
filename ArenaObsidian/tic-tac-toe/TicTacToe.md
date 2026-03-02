@@ -56,5 +56,3 @@ dotnet run -- --InstanceId 1
 Since the game uses cookies to identify players, you will need a separate browser session to be able to play against yourself and experience the game.
 
 
- ![[Pasted image 20260227103040.png]]
-

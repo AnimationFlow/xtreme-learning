@@ -1,2 +1,6 @@
 <Solution>
+  <Project Path="Connect4.Api/Connect4.Api.csproj" />
+  <Project Path="Connect4.Client/Connect4.Client.csproj" />
+  <Project Path="Connect4.Contracts/Connect4.Contracts.csproj" />
+  <Project Path="Connect4.Domain/Connect4.Domain.csproj" />
 </Solution>
